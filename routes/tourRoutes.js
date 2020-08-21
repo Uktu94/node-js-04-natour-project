@@ -5,6 +5,14 @@ const router = express.Router();
 
 // router.param('id', tourController.checkID);
 
+// We will start first middleware that's gonna be run is aliasTopTours
+router
+  .route('/top-5-cheap')
+  .get(tourController.aliasTopTours, tourController.getAllTours);
+
+router.route('/tour-stats').get(tourController.getTourStats);
+router.route('/monthly-plan/:year').get(tourController.gethMonthlyPlan);
+
 // They are actually kind of middleware themselves that only apply for a certain URL
 router
   .route('/')
