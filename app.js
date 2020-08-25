@@ -1,6 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
@@ -18,12 +20,6 @@ app.use(express.json()); // is middleware. Middleware basically a fn that can mo
 
 app.use(express.static(`${__dirname}/public`));
 
-// Simple middleware fns that we define they are going to apply every single request
-app.use((req, res, next) => {
-  console.log('Hello from the middleware :D');
-  next(); // next methodunu çağırmazsak req, res methodu stucklanır. client'a response gönderemeyiz
-});
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
@@ -33,5 +29,17 @@ app.use((req, res, next) => {
 // Mounting routers
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+
+app.all('*', (req, res, next) => {
+  // We're creating an error then we define the status and status code properties on it
+  // ... so that our error handling middleware can then use them in the next step
+  // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  // err.status = 'fail';
+  // err.statusCode = 404;
+
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`), 404);
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;
