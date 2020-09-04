@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const { JsonWebTokenError } = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -35,7 +36,8 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Passwords are not the same'
     }
-  }
+  },
+  passwordChangedAt: Date
 });
 
 userSchema.pre('save', async function (next) {
@@ -59,6 +61,19 @@ userSchema.methods.correctPassword = async function (
   userPasssword
 ) {
   return await bcrypt.compare(candidatePassword, userPasssword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  // That's our default meaning that thee user hasn't changed the password after timestamp
+  // false means NOT changed
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

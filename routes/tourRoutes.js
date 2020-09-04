@@ -1,5 +1,6 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.route('/monthly-plan/:year').get(tourController.gethMonthlyPlan);
 // They are actually kind of middleware themselves that only apply for a certain URL
 router
   .route('/')
-  .get(tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 // Burası da bir nevi middleware olduğu için bu blok içerisine custom middleware konulduğu
 // ... zaman çalışmaz. Çünkü cycle tamamlanmış oluyor ve custom'a sıra gelmiyor.
